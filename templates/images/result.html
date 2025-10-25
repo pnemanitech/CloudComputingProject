@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Processed Image - Image Processing App{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-check-circle me-2"></i>Image Processed Successfully!
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Original Image -->
+                        <div class="col-md-6 mb-4">
+                            <h5 class="text-center mb-3">
+                                <i class="fas fa-image me-2"></i>Original Image
+                            </h5>
+                            <div class="text-center">
+                                <img src="{{ processed_image.original_image.url }}" 
+                                     alt="Original Image" 
+                                     class="img-fluid rounded shadow">
+                            </div>
+                        </div>
+
+                        <!-- Processed Image -->
+                        <div class="col-md-6 mb-4">
+                            <h5 class="text-center mb-3">
+                                <i class="fas fa-magic me-2"></i>Processed Image
+                                <span class="badge bg-primary ms-2">{{ processed_image.get_filter_type_display }}</span>
+                            </h5>
+                            <div class="text-center">
+                                {% if processed_image.processed_image %}
+                                    <img src="{{ processed_image.processed_image.url }}" 
+                                         alt="Processed Image" 
+                                         class="img-fluid rounded shadow">
+                                {% else %}
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        Processed image not available
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Image Details -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fas fa-info-circle me-2"></i>Image Details
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Filter Applied:</strong> {{ processed_image.get_filter_type_display }}</p>
+                                            <p><strong>Processed On:</strong> {{ processed_image.created_at|date:"F d, Y H:i" }}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Image ID:</strong> {{ processed_image.id }}</p>
+                                            {% if processed_image.s3_url %}
+                                                <p><strong>S3 URL:</strong> 
+                                                    <a href="{{ processed_image.s3_url }}" target="_blank" class="text-decoration-none">
+                                                        <i class="fas fa-external-link-alt me-1"></i>View on S3
+                                                    </a>
+                                                </p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="row mt-4">
+                        <div class="col-12 text-center">
+                            <div class="btn-group" role="group">
+                                {% if processed_image.processed_image %}
+                                    <a href="{% url 'images:download' processed_image.id %}" 
+                                       class="btn btn-primary btn-lg">
+                                        <i class="fas fa-download me-2"></i>Download Processed Image
+                                    </a>
+                                {% endif %}
+                                <a href="{% url 'images:upload' %}" class="btn btn-outline-primary btn-lg">
+                                    <i class="fas fa-plus me-2"></i>Process Another Image
+                                </a>
+                                <a href="{% url 'images:gallery' %}" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-images me-2"></i>View Gallery
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

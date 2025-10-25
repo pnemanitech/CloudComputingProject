@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Storage Statistics - Image Processing App{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Storage Statistics
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if s3_stats %}
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">{{ s3_stats.object_count }}</h5>
+                                        <p class="card-text">Objects</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">{{ s3_stats.size_bytes|filesizeformat }}</h5>
+                                        <p class="card-text">Total Size</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">{{ s3_stats.last_modified|date:"M d, Y" }}</h5>
+                                        <p class="card-text">Last Modified</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% elif s3_error %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            S3 Error: {{ s3_error }}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">S3 statistics will be displayed here when configured.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

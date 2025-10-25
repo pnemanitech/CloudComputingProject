@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gallery - Image Processing App{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 mb-4">
+            <i class="fas fa-images me-3"></i>Image Gallery
+        </h1>
+        <p class="lead">Browse all processed images in our gallery</p>
+    </div>
+</div>
+
+<div class="container my-5">
+    {% if processed_images %}
+        <div class="row">
+            {% for image in processed_images %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card filter-card h-100">
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                {% if image.processed_image %}
+                                    <img src="{{ image.processed_image.url }}" 
+                                         alt="Processed Image" 
+                                         class="img-fluid rounded shadow"
+                                         style="max-height: 200px; object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                         style="height: 200px;">
+                                        <i class="fas fa-image fa-3x text-muted"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <h6 class="card-title">
+                                <span class="badge bg-primary">{{ image.get_filter_type_display }}</span>
+                            </h6>
+                            
+                            <p class="card-text text-muted small">
+                                <i class="fas fa-calendar me-1"></i>
+                                {{ image.created_at|date:"M d, Y H:i" }}
+                            </p>
+                            
+                            {% if image.s3_url %}
+                                <p class="card-text small">
+                                    <i class="fas fa-cloud me-1"></i>
+                                    <a href="{{ image.s3_url }}" target="_blank" class="text-decoration-none">
+                                        View on S3
+                                    </a>
+                                </p>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="card-footer bg-transparent">
+                            <div class="d-grid gap-2">
+                                {% if image.processed_image %}
+                                    <a href="{% url 'images:download' image.id %}" 
+                                       class="btn btn-primary btn-sm">
+                                        <i class="fas fa-download me-1"></i>Download
+                                    </a>
+                                {% endif %}
+                                <a href="{% url 'images:result' image.id %}" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination would go here if needed -->
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <a href="{% url 'images:upload' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>Process New Image
+                </a>
+            </div>
+        </div>
+    {% else %}
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-images fa-4x text-muted mb-4"></i>
+                        <h4>No Images Yet</h4>
+                        <p class="text-muted">Start processing images to see them in the gallery!</p>
+                        <a href="{% url 'images:upload' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-upload me-2"></i>Upload Your First Image
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

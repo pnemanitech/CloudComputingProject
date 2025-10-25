@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home - Image Processing App{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 mb-4">
+            <i class="fas fa-magic me-3"></i>Image Processing Application
+        </h1>
+        <p class="lead">Upload your images and apply amazing filters with our cloud-based processing system</p>
+        <a href="{% url 'images:upload' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-upload me-2"></i>Start Processing
+        </a>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="text-center mb-4">Available Filters</h2>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card filter-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-adjust fa-3x text-primary mb-3"></i>
+                    <h5>Grayscale</h5>
+                    <p class="text-muted">Convert your image to black and white</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card filter-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-sun fa-3x text-warning mb-3"></i>
+                    <h5>Sepia</h5>
+                    <p class="text-muted">Apply vintage sepia tone effect</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card filter-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-palette fa-3x text-info mb-3"></i>
+                    <h5>Poster</h5>
+                    <p class="text-muted">Reduce colors for poster effect</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card filter-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-eye-slash fa-3x text-secondary mb-3"></i>
+                    <h5>Blur</h5>
+                    <p class="text-muted">Apply blur effect to your image</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card filter-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-border-all fa-3x text-success mb-3"></i>
+                    <h5>Edge Detection</h5>
+                    <p class="text-muted">Highlight edges in your image</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card filter-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-bolt fa-3x text-danger mb-3"></i>
+                    <h5>Solar</h5>
+                    <p class="text-muted">Apply solarization effect</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

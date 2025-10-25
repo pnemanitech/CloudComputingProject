@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Upload Image - Image Processing App{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-upload me-2"></i>Upload & Process Image
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="uploadForm" action="{% url 'images:upload' %}">
+                        {% csrf_token %}
+                        
+                        <!-- Image Upload Area -->
+                        <div class="upload-area mb-4" id="uploadArea">
+                            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                            <h5>Drag & Drop your image here</h5>
+                            <p class="text-muted">or click to browse</p>
+                            <input type="file" name="original_image" id="imageInput" accept="image/*" style="display: none;">
+                        </div>
+
+                        <!-- Image Preview -->
+                        <div id="imagePreview" style="display: none;" class="mb-4">
+                            <img id="previewImg" src="" alt="Preview" class="img-fluid rounded">
+                        </div>
+
+                        <!-- Filter Selection -->
+                        <div class="mb-4">
+                            <h5 class="mb-3">
+                                <i class="fas fa-magic me-2"></i>Choose Filter
+                            </h5>
+                            <div class="row">
+                                {% for choice in form.filter_type %}
+                                    {% if choice.data.value %}
+                                    <div class="col-md-6 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="filter_type" 
+                                                   value="{{ choice.data.value }}" id="filter_{{ forloop.counter0 }}">
+                                            <label class="form-check-label" for="filter_{{ forloop.counter0 }}">
+                                                {% if choice.data.value == 'gray' %}
+                                                    <i class="fas fa-adjust me-1"></i>Grayscale
+                                                {% elif choice.data.value == 'sepia' %}
+                                                    <i class="fas fa-sun me-1"></i>Sepia
+                                                {% elif choice.data.value == 'poster' %}
+                                                    <i class="fas fa-palette me-1"></i>Poster
+                                                {% elif choice.data.value == 'blur' %}
+                                                    <i class="fas fa-eye-slash me-1"></i>Blur
+                                                {% elif choice.data.value == 'edge' %}
+                                                    <i class="fas fa-border-all me-1"></i>Edge Detection
+                                                {% elif choice.data.value == 'solar' %}
+                                                    <i class="fas fa-bolt me-1"></i>Solar
+                                                {% endif %}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg" id="processBtn" disabled>
+                                <i class="fas fa-cog me-2"></i>Process Image
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.upload-area {
+    border: 2px dashed #dee2e6;
+    border-radius: 10px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.upload-area:hover {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.upload-area.dragover {
+    border-color: #007bff;
+    background-color: #e3f2fd;
+}
+
+.image-preview {
+    max-height: 300px;
+    object-fit: contain;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    const processBtn = document.getElementById('processBtn');
+    const filterInputs = document.querySelectorAll('input[name="filter_type"]');
+    const uploadForm = document.getElementById('uploadForm');
+
+    // Handle drag and drop
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            imageInput.files = files;
+            handleImagePreview(files[0]);
+        }
+    });
+
+    // Handle click to upload
+    uploadArea.addEventListener('click', function() {
+        imageInput.click();
+    });
+
+    // Handle file input change
+    imageInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            handleImagePreview(e.target.files[0]);
+        }
+    });
+
+    // Handle filter selection
+    filterInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            checkFormValidity();
+        });
+    });
+
+    // Handle form submission
+    uploadForm.addEventListener('submit', function(e) {
+        console.log('Form submission started');
+        console.log('Form action:', uploadForm.action);
+        console.log('Form method:', uploadForm.method);
+        console.log('Form enctype:', uploadForm.enctype);
+        console.log('Form data:', new FormData(uploadForm));
+        console.log('Form valid:', uploadForm.checkValidity());
+        console.log('Form elements:', uploadForm.elements);
+        // Let the form submit normally
+    });
+
+    // Handle button click
+    processBtn.addEventListener('click', function(e) {
+        console.log('Button clicked');
+        console.log('Form will submit to:', uploadForm.action);
+        console.log('Form method:', uploadForm.method);
+        console.log('Form enctype:', uploadForm.enctype);
+        console.log('CSRF token present:', !!document.querySelector('[name=csrfmiddlewaretoken]'));
+        
+        // Force enable the form if it's valid
+        if (uploadForm.checkValidity()) {
+            processBtn.disabled = false;
+            processBtn.classList.remove('disabled');
+            console.log('Form is valid, submitting...');
+            uploadForm.submit();
+        } else {
+            console.log('Form is not valid, preventing submission');
+            e.preventDefault();
+        }
+    });
+
+    function handleImagePreview(file) {
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                imagePreview.style.display = 'block';
+                uploadArea.style.display = 'none';
+                checkFormValidity();
+            };
+            reader.readAsDataURL(file);
+        } else {
+            alert('Please select a valid image file.');
+        }
+    }
+
+    function checkFormValidity() {
+        const hasImage = imageInput.files.length > 0;
+        const hasFilter = Array.from(filterInputs).some(input => input.checked);
+        const shouldEnable = hasImage && hasFilter;
+        
+        processBtn.disabled = !shouldEnable;
+        
+        if (shouldEnable) {
+            processBtn.classList.remove('disabled');
+        } else {
+            processBtn.classList.add('disabled');
+        }
+    }
+
+});
+</script>
+{% endblock %}

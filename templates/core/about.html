@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About - Image Processing App{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="text-center mb-4">About Image Processing Application</h1>
+            
+            <div class="card">
+                <div class="card-body">
+                    <h3>Features</h3>
+                    <ul>
+                        <li>Upload images with drag-and-drop interface</li>
+                        <li>Apply 6 different image filters</li>
+                        <li>Cloud storage with AWS S3</li>
+                        <li>Download processed images</li>
+                        <li>Browse image gallery</li>
+                    </ul>
+                    
+                    <h3>Technology Stack</h3>
+                    <ul>
+                        <li><strong>Backend:</strong> Django 4.2</li>
+                        <li><strong>Image Processing:</strong> PIL/Pillow, NumPy</li>
+                        <li><strong>Cloud Storage:</strong> AWS S3</li>
+                        <li><strong>Frontend:</strong> Bootstrap 5</li>
+                        <li><strong>Database:</strong> SQLite (development)</li>
+                    </ul>
+                    
+                    <h3>Architecture</h3>
+                    <p>This application follows a three-tier architecture:</p>
+                    <ul>
+                        <li><strong>Web Tier:</strong> Django templates with responsive UI</li>
+                        <li><strong>Application Tier:</strong> Django views and image processing</li>
+                        <li><strong>Storage Tier:</strong> Local storage + AWS S3 cloud storage</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
