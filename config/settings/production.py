@@ -53,13 +53,32 @@ DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
 
 # AWS S3 settings for production
-AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
-AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400',
-}
-AWS_LOCATION = 'static'
-AWS_DEFAULT_ACL = 'public-read'
-
+if os.environ.get('USE_S3_STORAGE', 'true').lower() == 'true' and os.environ.get('AWS_STORAGE_BUCKET_NAME'):
+   # AWS S3 Configuration
+   AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'us-east-1')
+   
+   # CRITICAL: Set to None to avoid ACL issues with S3 Block Public Access
+   AWS_DEFAULT_ACL = None
+   
+   # S3 Storage Configuration
+   AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+   AWS_S3_OBJECT_PARAMETERS = {
+       'CacheControl': 'max-age=86400',
+   }
+   
+   # Use IAM role for authentication (don't set ACCESS_KEY or SECRET_KEY)
+   AWS_S3_SIGNATURE_VERSION = 's3v4'
+   AWS_S3_ADDRESSING_STYLE = 'virtual'
+   AWS_QUERYSTRING_AUTH = False
+   
+   # Storage backends
+   STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+   DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+   
+   AWS_LOCATION = 'static'
+   STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
+   MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+    
 # Logging for production
 LOGGING['handlers']['file']['filename'] = '/var/log/django/image_processing.log'
 LOGGING['loggers']['django']['handlers'] = ['file']
