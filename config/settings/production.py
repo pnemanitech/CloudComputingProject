@@ -10,12 +10,8 @@ from socket import gethostname
 DEBUG = False
 
 # ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
-ALLOWED_HOSTS = ['*']  # Simplified - or keep your specific list
-# Add the instance's own hostname (for health checks)
-try:
-    ALLOWED_HOSTS.append(gethostbyname(gethostname()))
-except:
-    pass
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(",")
+ALLOWED_HOSTS.append(gethostbyname(gethostname()))
 
 # Trust the X-Forwarded-Host header from the ALB
 USE_X_FORWARDED_HOST = True
