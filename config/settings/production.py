@@ -108,23 +108,40 @@ else:
 LOGGING['handlers']['file']['filename'] = '/var/log/django/image_processing.log'
 LOGGING['loggers']['django']['handlers'] = ['file']
 
-# Add CloudWatch logging handler
-try:
-    import watchtower
-    LOGGING['handlers']['cloudwatch'] = {
-        'level': 'INFO',
-        'class': 'watchtower.CloudWatchLogHandler',
-        'log_group': os.environ.get('CLOUDWATCH_LOG_GROUP', 'image-processing-django'),
-        'stream_name': os.environ.get('CLOUDWATCH_LOG_STREAM', '{instance_id}'),
-        'formatter': 'verbose',
-        'use_queues': False,
-        'create_log_group': True,
-    }
-    # Add CloudWatch to Django logger
-    LOGGING['loggers']['django']['handlers'].append('cloudwatch')
-    # Also log application logs to CloudWatch
-    LOGGING['root']['handlers'].append('cloudwatch')
-except ImportError:
-    # Watchtower not installed, skip CloudWatch logging
+# Add CloudWatch logging handler (optional - only if watchtower is installed)
+# Set ENABLE_CLOUDWATCH_LOGS=true to enable CloudWatch logging
+if os.environ.get('ENABLE_CLOUDWATCH_LOGS', 'false').lower() == 'true':
+    try:
+        import watchtower
+        
+        # Add CloudWatch handler
+        cloudwatch_handler = {
+            'level': 'INFO',
+            'class': 'watchtower.CloudWatchLogHandler',
+            'log_group': os.environ.get('CLOUDWATCH_LOG_GROUP', 'image-processing-django'),
+            'stream_name': os.environ.get('CLOUDWATCH_LOG_STREAM', 'django-app'),
+            'formatter': 'verbose',
+            'use_queues': False,
+            'create_log_group': True,
+        }
+        
+        LOGGING['handlers']['cloudwatch'] = cloudwatch_handler
+        
+        # Add CloudWatch to handlers
+        if 'loggers' in LOGGING and 'django' in LOGGING['loggers']:
+            handlers = LOGGING['loggers']['django'].get('handlers', [])
+            if isinstance(handlers, list):
+                if 'cloudwatch' not in handlers:
+                    handlers.append('cloudwatch')
+                LOGGING['loggers']['django']['handlers'] = handlers
+        
+    except Exception as e:
+        # CloudWatch logging failed, continue without it
+        # Logs will still go to file and console
+        pass
+else:
+    # CloudWatch logging disabled by default
+    # Enable it by setting ENABLE_CLOUDWATCH_LOGS=true in environment
     pass
+
 
