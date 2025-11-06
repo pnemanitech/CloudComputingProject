@@ -9,12 +9,12 @@ from socket import gethostname
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['image-processing-alb-661118436.us-east-1.elb.amazonaws.com','*']
-# Add the instance's own hostname (for health checks)
-try:
-    ALLOWED_HOSTS.append(gethostbyname(gethostname()))
-except:
-    pass
+# ALLOWED_HOSTS - handle comma-separated list and filter empty values
+allowed_hosts = os.environ.get('ALLOWED_HOSTS', '')
+if allowed_hosts:
+    ALLOWED_HOSTS = [host.strip() for host in allowed_hosts.split(',') if host.strip()]
+else:
+    ALLOWED_HOSTS = ['*']  # Fallback to allow all hosts if not set
 
 # Trust the X-Forwarded-Host header from the ALB
 USE_X_FORWARDED_HOST = True
