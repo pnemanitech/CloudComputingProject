@@ -27,15 +27,27 @@ DATABASES = {
 }
 
 # Security settings for production
+# Only enable HTTPS redirect if explicitly set (for HTTP Load Balancer, keep False)
 SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False').lower() == 'true'
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# Session security
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# Session security - only use secure cookies if using HTTPS
+# For HTTP Load Balancer, set to False to allow cookies over HTTP
+USE_HTTPS = os.environ.get('USE_HTTPS', 'False').lower() == 'true'
+SESSION_COOKIE_SECURE = USE_HTTPS
+CSRF_COOKIE_SECURE = USE_HTTPS
+
+# CSRF trusted origins - allow Load Balancer domain
+csrf_trusted_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+if csrf_trusted_origins:
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_trusted_origins.split(',') if origin.strip()]
+else:
+    # Fallback: use ALLOWED_HOSTS to build trusted origins
+    protocol = 'https' if USE_HTTPS else 'http'
+    CSRF_TRUSTED_ORIGINS = [f'{protocol}://{host}' for host in ALLOWED_HOSTS if host != '*']
 
 # Email configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
