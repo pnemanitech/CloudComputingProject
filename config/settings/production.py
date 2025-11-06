@@ -9,9 +9,12 @@ from socket import gethostname
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-# ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(",")
-ALLOWED_HOSTS.append(gethostbyname(gethostname()))
+ALLOWED_HOSTS = ['*']
+# Add the instance's own hostname (for health checks)
+try:
+    ALLOWED_HOSTS.append(gethostbyname(gethostname()))
+except:
+    pass
 
 # Trust the X-Forwarded-Host header from the ALB
 USE_X_FORWARDED_HOST = True
