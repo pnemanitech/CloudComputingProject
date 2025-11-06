@@ -38,14 +38,27 @@ class ImageUploadView(FormView):
             print(f"Saved ProcessedImage with ID: {processed_image.id}")
             
             # Process the image
-            original_path = processed_image.original_image.path
-            print(f"Original image path: {original_path}")
-            original_img = Image.open(original_path)
+            # Process the image - handle both local and S3 storage
+            # When using S3, files don't have .path, so we need to read from the file object
+            try:
+                # Try to get local path (for local storage)
+                original_path = processed_image.original_image.path
+                print(f"Original image path: {original_path}")
+                original_img = Image.open(original_path)
+                file_size = os.path.getsize(original_path)
+            except (AttributeError, NotImplementedError, ValueError):
+                # If .path doesn't exist (S3 storage), read from file object
+                print("Using S3 storage, reading file from storage")
+                original_img = Image.open(processed_image.original_image)
+                # Get file size from the file object
+                processed_image.original_image.seek(0, 2)  # Seek to end
+                file_size = processed_image.original_image.tell()
+                processed_image.original_image.seek(0)  # Reset to beginning
             
             # Store image dimensions
             processed_image.width = original_img.width
             processed_image.height = original_img.height
-            processed_image.file_size = os.path.getsize(original_path)
+            processed_image.file_size = file_size
             processed_image.save()
             
             # Apply filter
@@ -68,18 +81,32 @@ class ImageUploadView(FormView):
                     save=True
                 )
             
-            # Upload to S3 if configured
-            if (settings.AWS_ACCESS_KEY_ID != 'your-access-key-here' and 
-                settings.AWS_SECRET_ACCESS_KEY != 'your-secret-key-here' and
+            # Upload to S3 if configured (only if not already using S3 storage)
+            # If using S3 storage backend, files are already uploaded to S3
+            # Only need to get the URL if using local storage but want S3 URLs
+            use_s3_storage = os.environ.get('USE_S3_STORAGE', 'true').lower() == 'true'
+            if not use_s3_storage and (hasattr(settings, 'AWS_STORAGE_BUCKET_NAME') and 
+                settings.AWS_STORAGE_BUCKET_NAME and 
                 settings.AWS_STORAGE_BUCKET_NAME != 'your-bucket-name-here'):
                 
-                s3_manager = S3Manager()
-                s3_key = s3_manager.generate_s3_key(processed_image.id, filter_type)
-                s3_url = s3_manager.upload_image(processed_image.processed_image.path, s3_key)
-                
-                if s3_url:
-                    processed_image.s3_url = s3_url
-                    processed_image.save()
+                try:
+                    s3_manager = S3Manager()
+                    s3_key = s3_manager.generate_s3_key(processed_image.id, filter_type)
+                    # Try to get path, if not available (S3), use the file object
+                    try:
+                        processed_path = processed_image.processed_image.path
+                    except (AttributeError, NotImplementedError):
+                        # If using S3, file is already uploaded, just get the URL
+                        processed_image.s3_url = processed_image.processed_image.url
+                        processed_image.save()
+                    else:
+                        s3_url = s3_manager.upload_image(processed_path, s3_key)
+                        if s3_url:
+                            processed_image.s3_url = s3_url
+                            processed_image.save()
+                except Exception as e:
+                    print(f"Warning: Could not upload to S3: {str(e)}")
+                    # Continue without S3 URL
             
             # Clean up temporary file
             os.unlink(tmp_path)
