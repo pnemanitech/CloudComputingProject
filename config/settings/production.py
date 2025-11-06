@@ -106,7 +106,7 @@ else:
 
 # Logging for production
 LOGGING['handlers']['file']['filename'] = '/var/log/django/image_processing.log'
-LOGGING['loggers']['django']['handlers'] = ['file']
+LOGGING['loggers']['django']['handlers'] = ['file', 'console']
 
 # Add CloudWatch logging handler (optional - only if watchtower is installed)
 # Set ENABLE_CLOUDWATCH_LOGS=true to enable CloudWatch logging
