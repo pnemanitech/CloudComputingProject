@@ -107,3 +107,24 @@ else:
 # Logging for production
 LOGGING['handlers']['file']['filename'] = '/var/log/django/image_processing.log'
 LOGGING['loggers']['django']['handlers'] = ['file']
+
+# Add CloudWatch logging handler
+try:
+    import watchtower
+    LOGGING['handlers']['cloudwatch'] = {
+        'level': 'INFO',
+        'class': 'watchtower.CloudWatchLogHandler',
+        'log_group': os.environ.get('CLOUDWATCH_LOG_GROUP', 'image-processing-django'),
+        'stream_name': os.environ.get('CLOUDWATCH_LOG_STREAM', '{instance_id}'),
+        'formatter': 'verbose',
+        'use_queues': False,
+        'create_log_group': True,
+    }
+    # Add CloudWatch to Django logger
+    LOGGING['loggers']['django']['handlers'].append('cloudwatch')
+    # Also log application logs to CloudWatch
+    LOGGING['root']['handlers'].append('cloudwatch')
+except ImportError:
+    # Watchtower not installed, skip CloudWatch logging
+    pass
+
