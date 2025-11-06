@@ -9,7 +9,7 @@ from socket import gethostname
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['image-processing-alb-661118436.us-east-1.elb.amazonaws.com','*']
 # Add the instance's own hostname (for health checks)
 try:
     ALLOWED_HOSTS.append(gethostbyname(gethostname()))
