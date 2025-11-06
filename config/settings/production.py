@@ -79,24 +79,30 @@ if os.environ.get('USE_S3_STORAGE', 'true').lower() == 'true' and os.environ.get
     AWS_S3_OBJECT_PARAMETERS = {
         'CacheControl': 'max-age=86400',
     }
-    
+    AWS_LOCATION = 'static'
     # Use IAM role for authentication (don't set ACCESS_KEY or SECRET_KEY)
     AWS_S3_SIGNATURE_VERSION = 's3v4'
     AWS_S3_ADDRESSING_STYLE = 'virtual'
     AWS_QUERYSTRING_AUTH = False
+    AWS_QUERYSTRING_EXPIRE = 3600  # URL expiration (not needed for public files)
     
-    # Storage backends - MUST be set AFTER AWS configuration
-    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    
-    AWS_LOCATION = 'static'
+    # Static files configuration for S3
     STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    # Media files configuration for S3
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 else:
-    # Fallback to local storage
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    # Use local static files with WhiteNoise (temporary fallback)
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    STATIC_URL = '/static/'
+    
+    # Fallback to local storage
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    
+    # Add WhiteNoise middleware after SecurityMiddleware
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 # Logging for production
 LOGGING['handlers']['file']['filename'] = '/var/log/django/image_processing.log'
