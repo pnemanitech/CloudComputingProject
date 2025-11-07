@@ -21,9 +21,14 @@ USE_X_FORWARDED_HOST = True
 
 # Database
 DATABASES = {
-    'default': dj_database_url.parse(
-        os.environ.get('DATABASE_URL', 'sqlite:///db.sqlite3')
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'image_processing',
+        'USER': 'django',
+        'PASSWORD': 'TempleProject10',
+        'HOST': 'image-processing-db.cyzu2goi8ee4.us-east-1.rds.amazonaws.com',
+        'PORT': '5432',
+    }
 }
 
 # Security settings for production
