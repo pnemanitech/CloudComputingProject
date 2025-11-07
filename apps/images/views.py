@@ -28,7 +28,17 @@ class ImageUploadView(FormView):
             
             print(f"Processing image: {uploaded_file.name}, filter: {filter_type}")
             
-            # Create ProcessedImage instance
+            # CRITICAL: Read file content BEFORE saving to S3
+            # Once saved to S3, the file object may be closed or unavailable
+            uploaded_file.seek(0)  # Reset to beginning
+            file_content = uploaded_file.read()
+            file_size = len(file_content)
+            uploaded_file.seek(0)  # Reset again for saving
+            
+            # Open image from the file content we just read
+            original_img = Image.open(BytesIO(file_content))
+            
+            # Create ProcessedImage instance and save
             processed_image = ProcessedImage(
                 original_image=uploaded_file,
                 filter_type=filter_type
@@ -36,24 +46,6 @@ class ImageUploadView(FormView):
             processed_image.save()
             
             print(f"Saved ProcessedImage with ID: {processed_image.id}")
-            
-            # Process the image
-            # Process the image - handle both local and S3 storage
-            # When using S3, files don't have .path, so we need to read from the file object
-            try:
-                # Try to get local path (for local storage)
-                original_path = processed_image.original_image.path
-                print(f"Original image path: {original_path}")
-                original_img = Image.open(original_path)
-                file_size = os.path.getsize(original_path)
-            except (AttributeError, NotImplementedError, ValueError):
-                # If .path doesn't exist (S3 storage), read from file object
-                print("Using S3 storage, reading file from storage")
-                original_img = Image.open(processed_image.original_image)
-                # Get file size from the file object
-                processed_image.original_image.seek(0, 2)  # Seek to end
-                file_size = processed_image.original_image.tell()
-                processed_image.original_image.seek(0)  # Reset to beginning
             
             # Store image dimensions
             processed_image.width = original_img.width
