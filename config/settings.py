@@ -76,8 +76,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'image_processing',
+        'USER': 'django',
+        'PASSWORD': 'TempleProject10',
+        'HOST': 'image-processing-db.cyzu2goi8ee4.us-east-1.rds.amazonaws.com',
+        'PORT': '5432',
     }
 }
 
