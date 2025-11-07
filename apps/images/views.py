@@ -5,6 +5,7 @@ from django.core.files.base import ContentFile
 from django.conf import settings
 from django.views.generic import TemplateView, View
 from django.views.generic.edit import FormView
+from io import BytesIO  # ADD THIS LINE
 import os
 import tempfile
 from PIL import Image
